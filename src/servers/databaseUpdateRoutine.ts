@@ -6,10 +6,11 @@ export class DatabaseUpdateRoutine {
   minutes: number | undefined;
   seconds: number | undefined;
 
-  constructor(hours: number, minutes: number, seconds: number) {
-    this.hours = hours;
-    this.minutes = minutes;
-    this.seconds = seconds;
+  constructor(time: string) {
+    const [hours, minutes, seconds] = time.split(':');
+    this.hours = parseInt(hours);
+    this.minutes = parseInt(minutes);
+    this.seconds = parseInt(seconds);
   }
 
   public start() {

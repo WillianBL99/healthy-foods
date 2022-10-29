@@ -1,11 +1,15 @@
 import 'express-async-errors';
-import express, { Express, json } from 'express';
-import ExceptionHandler from './events/AppError';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import ExceptionHandler from './events/AppError';
+import { mongoDb } from './config';
 import { informationRoute } from '@/routes';
 import { DatabaseUpdateRoutine } from './servers/databaseUpdateRoutine';
-import { mongoDb } from './config';
-const routine = new DatabaseUpdateRoutine(13, 16, 0);
+import express, { Express, json } from 'express';
+
+dotenv.config();
+const time = process.env.TIME_DATABASE_UPDATE ?? '00:00:00';
+const routine = new DatabaseUpdateRoutine(time);
 routine.start();
 
 const app = express()
