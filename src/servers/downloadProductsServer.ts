@@ -129,11 +129,12 @@ function processBuffer(arquive: FileProduct, porductsPerFile: number): Boolean {
 
 function processLine(line: string) {
   if (line[line.length - 1] == '\r') line = line.substr(0, line.length - 1);
+  const seconds = 1000;
 
   if (line.length > 0) {
     var obj = JSON.parse(line); // parse the JSON
     const parseObj = filterProperties(obj);
-    parseObj.imported_t = new Date().getUTCSeconds();
+    parseObj.imported_t = new Date().getTime()/seconds;
     parseObj.status = 'draft';
     listProducts.push(parseObj);
   }
