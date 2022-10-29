@@ -1,21 +1,42 @@
 import AppLog from '@/events/AppLog';
-import { Collection, Document, MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+import { Collection, Db, Document, MongoClient } from 'mongodb';
+dotenv.config();
 
-const uri =
-  'mongodb+srv://root:root@cluster0.drmdthq.mongodb.net/?retryWrites=true&w=majority';
-const client = new MongoClient(uri);
+const uri = process.env.MONGO_URI || '';
 
-export function products(callback: (collection: Collection<Document>) => void) {
+export let database: Db;
+let client: MongoClient;
+
+export async function connect() {
   try {
-    const db = client.db('healthy-foods');
-    const collection = db.collection('products');
-
-    AppLog('Database', 'Connected to database');
-    callback(collection);
-  } catch (error: any) {
-    throw new Error(error);
-  } finally {
-    AppLog('Database', 'Connection closed');
-    client.close();
+    client = new MongoClient(uri);
+    await client.connect();
+    database = client.db('healthy-foods');
+    AppLog('Database', 'Connected');
+  } catch (error) {
+    AppLog('Database', error);
+    process.exit(1);
   }
 }
+
+export async function disconnect() {
+  try {
+    await client.close();
+    AppLog('Database', 'Disconnected');
+  } catch (error) {
+    AppLog('Database', error);
+  }
+}
+
+export async function products<T extends Document, R>(
+  callback: (collection: Collection<T>) => Promise<R>
+) {
+  return await callback(database.collection('products'));
+}
+
+export const mongoDb = {
+  connect,
+  disconnect,
+  products,
+};
