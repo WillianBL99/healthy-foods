@@ -29,10 +29,10 @@ export async function disconnect() {
   }
 }
 
-export async function products<T extends Document>(
-  callback: (collection: Collection<T>) => Promise<void>
+export async function products<T extends Document, R>(
+  callback: (collection: Collection<T>) => Promise<R>
 ) {
-  await callback(database.collection('products'));
+  return await callback(database.collection('products'));
 }
 
 export const mongoDb = {
