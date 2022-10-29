@@ -1,20 +1,29 @@
 import fs from 'fs';
 import zlib from 'zlib';
 import request from 'request';
-import Types, { FileProduct } from '@/interfaces';
-import { mongoDb } from '@/config';
+import Types, { FileProduct, Product } from '@/interfaces';
+import { productsRepository } from '@/repositories';
+import { removeFromObject } from '@/utils/removeFromObject';
 
 const BASE_URL = 'http://challenges.coode.sh/food/data/json';
 const LOCAL_PATH = './src/servers/data';
+const filesName = [
+  'products_01.json.gz',
+  'products_02.json.gz',
+  'products_03.json.gz',
+  'products_04.json.gz',
+  'products_05.json.gz',
+  'products_06.json.gz',
+  'products_07.json.gz',
+  'products_08.json.gz',
+  'products_09.json.gz',
+];
 
-let listProducts: Types<any>[] = [];
+let listProducts: Product[] = [];
 
 export async function transferPorductsToDatabase(
-  filesName: string[],
   porductsPerFile: number = 100
 ) {
-  await mongoDb.connect();
-
   for (const fileName of filesName) {
     // download zip file
     const urlZipFile = `${BASE_URL}/${fileName}`;
@@ -38,13 +47,21 @@ export async function transferPorductsToDatabase(
     await saveOnDatabase(listProducts);
     listProducts = [];
   }
-
-  await mongoDb.disconnect();
 }
 
-async function saveOnDatabase(listObj: Types<any>[]) {
-  await mongoDb.products(async (collection) => {
-    await collection.insertMany(listObj);
+async function saveOnDatabase(listProduct: Product[]) {
+  if (await productsRepository.hasProducts()) {
+    await updateOnDatabase(listProduct);
+  } else {
+    await productsRepository.insertManyProducts(listProduct);
+  }
+}
+
+async function updateOnDatabase(listProduct: Product[]) {
+  listProduct.forEach(async (product) => {
+    const { code, last_modified_t, status, ...updatedProduct } = product;
+    removeFromObject(updatedProduct, "");
+    await productsRepository.upsertProduct(updatedProduct, product);
   });
 }
 
@@ -96,7 +113,7 @@ async function readJsonFileStream(
     });
 
     arquive.stream.on('end', () => {
-      console.log('end reading file');
+      console.log('end reading file', arquive.countRows);
       resolve();
     });
   });
@@ -129,15 +146,20 @@ function processBuffer(arquive: FileProduct, porductsPerFile: number): Boolean {
 
 function processLine(line: string) {
   if (line[line.length - 1] == '\r') line = line.substr(0, line.length - 1);
-  const seconds = 1000;
 
   if (line.length > 0) {
-    var obj = JSON.parse(line); // parse the JSON
-    const parseObj = filterProperties(obj);
-    parseObj.imported_t = new Date().getTime()/seconds;
-    parseObj.status = 'draft';
-    listProducts.push(parseObj);
+    const product = parseNewProduct(JSON.parse(line));
+    listProducts.push(product);
   }
+}
+
+function parseNewProduct(line: any) {
+  const milliseconds = 1000;
+  const seconds = new Date().getTime() / milliseconds;
+  const parseObj = filterProperties(line);
+  parseObj.imported_t = seconds.toFixed(0);
+  parseObj.status = 'publisher';
+  return parseObj as Product;
 }
 
 function filterProperties(obj: any): Types<any> {
