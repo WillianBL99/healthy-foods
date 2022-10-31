@@ -43,16 +43,16 @@ async function upsertProduct(
   });
 }
 
-async function changeStatusProduct(code: string, status: string) {
+async function changeStatusProduct(id: string, status: string) {
   await mongoDb.products(async (collection) => {
-    await collection.updateOne({ code }, { $set: { status } });
+    const _id = new ObjectId(id);
+    await collection.updateOne({ _id }, { $set: { status } });
   });
 }
 
-async function findProductById(code: string) {
+async function findProductById(id: string) {
   return mongoDb.products(async (collection) => {
-    const _id = new ObjectId(code);
-    console.log({ _id }, 'id');
+    const _id = new ObjectId(id);
     return (await collection.findOne({ _id })) as WithId<Product> | null;
   });
 }

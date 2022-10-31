@@ -16,7 +16,6 @@ export async function getProducts(req: Request, res: Response) {
 
 export async function getProduct(req: Request, res: Response) {
   const { code } = req.params;
-  console.log({ code }, 'code');
   const product = await productsService.getProductById(code);
 
   if (!product) {
@@ -29,4 +28,14 @@ export async function getProduct(req: Request, res: Response) {
   }
 
   res.status(httpStatus.OK).send(product);
+}
+
+export async function deleteProduct(req: Request, res: Response) {
+  const { code } = req.params;
+
+  await productsService.deleteProductById(code);
+
+  res
+    .send({ message: `Product ${code} trashed` })
+    .status(httpStatus.NO_CONTENT);
 }
