@@ -29,14 +29,40 @@ export async function disconnect() {
   }
 }
 
+export async function connectionTest() {
+  try {
+    if (!database) return undefined;
+    await database.collection('test').insertOne({ test: 'test' });
+    const result = await database.collection('test').findOne({ test: 'test' });
+    await database.collection('test').deleteOne({ test: 'test' });
+    return {
+      connection: true,
+      write: result ? true : false,
+      read: result ? true : false,
+    };
+
+  } catch (error) {
+    AppLog('Database', error);
+    return undefined;
+  }
+}
+
 export async function products<T extends Document, R>(
   callback: (collection: Collection<T>) => Promise<R>
 ) {
   return await callback(database.collection('products'));
 }
 
+export async function information<T extends Document, R>(
+  callback: (collection: Collection<T>) => Promise<R>
+) {
+  return await callback(database.collection('information'));
+}
+
 export const mongoDb = {
   connect,
   disconnect,
   products,
+  information,
+  connectionTest,
 };

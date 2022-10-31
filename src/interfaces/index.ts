@@ -34,3 +34,20 @@ export type Product = {
   imported_t: number;
   status: string;
 }
+
+export type Information = {
+  date: Date;
+  productUpdated: number;
+  productInserted: number;
+  arquivesToRead: string[];
+  arquivesReaded: string[];
+}
+
+export type ResposneInformation = {
+  connection: string;
+  databaseRead: string;
+  databaseWrite: string;
+  lastUpdate: string;
+  upTime: string;
+  memoryUsage: string;
+}
