@@ -1,8 +1,7 @@
 import { productsService } from '@/servers';
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { AppError } from '@/events';
-import {  } from '@/events/ErrorList';
+import { NOT_FOUND } from '@/events/ErrorList';
 
 export async function getProducts(req: Request, res: Response) {
   const { page, pagination } = req.query;
@@ -20,7 +19,7 @@ export async function getProduct(req: Request, res: Response) {
   const product = await productsService.getProductById(code);
 
   if (!product) {
-    throw new AppError(CONFLICT_DELETE);
+    throw NOT_FOUND();
   }
 
   res.status(httpStatus.OK).send(product);

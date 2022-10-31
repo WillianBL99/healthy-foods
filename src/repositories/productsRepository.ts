@@ -1,6 +1,6 @@
 import { mongoDb } from '@/config';
 import { Information, Product, ProductDB } from '@/interfaces';
-import { ObjectId, WithId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 
 async function getProducts(
   page: number,
