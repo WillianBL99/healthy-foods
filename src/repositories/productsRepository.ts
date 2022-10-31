@@ -1,6 +1,19 @@
 import { mongoDb } from '@/config';
-import { Information, Product } from '@/interfaces';
-import { WithId } from 'mongodb';
+import { Information, Product, ProductDB } from '@/interfaces';
+import { ObjectId } from 'mongodb';
+
+async function getProducts(
+  page: number,
+  pagination: number
+): Promise<ProductDB[]> {
+  return mongoDb.products(async (collection) => {
+    return (await collection
+      .find()
+      .skip(page * pagination)
+      .limit(pagination)
+      .toArray()) as ProductDB[];
+  });
+}
 
 async function insertManyProducts(products: Product[]) {
   mongoDb.products(async (collection) => {
@@ -30,15 +43,17 @@ async function upsertProduct(
   });
 }
 
-async function changeStatusProduct(code: string, status: string) {
+async function changeStatusProduct(id: string, status: string) {
   await mongoDb.products(async (collection) => {
-    await collection.updateOne({ code }, { $set: { status } });
+    const _id = new ObjectId(id);
+    await collection.updateOne({ _id }, { $set: { status } });
   });
 }
 
-async function findProduct(code: string) {
+async function findProductById(id: string) {
   return mongoDb.products(async (collection) => {
-    return (await collection.findOne({ code })) as WithId<Product> | null;
+    const _id = new ObjectId(id);
+    return (await collection.findOne({ _id })) as ProductDB | null;
   });
 }
 
@@ -48,12 +63,21 @@ async function hasProducts(): Promise<boolean> {
   });
 }
 
+async function updateProduct(id: string, updatedProduct: Partial<Product>) {
+  await mongoDb.products(async (collection) => {
+    const _id = new ObjectId(id);
+    await collection.updateOne({ _id }, { $set: { ...updatedProduct } });
+  });
+}
+
 const productsRepository = {
-  insertManyProducts,
-  upsertProduct,
-  changeStatusProduct,
-  findProduct,
   hasProducts,
+  getProducts,
+  updateProduct,
+  upsertProduct,
+  findProductById,
+  insertManyProducts,
+  changeStatusProduct,
 };
 
 export { productsRepository };
