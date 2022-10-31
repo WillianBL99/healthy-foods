@@ -37,10 +37,10 @@ export type Product = {
 
 export type Information = {
   date: Date;
-  products_updated: number;
-  products_inserted: number;
-  arquives_to_read: number;
-  arquives_readed: string[];
+  productUpdated: number;
+  productInserted: number;
+  arquivesToRead: string[];
+  arquivesReaded: string[];
 }
 
 export type ResposneInformation = {

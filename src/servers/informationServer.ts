@@ -1,6 +1,7 @@
 import { mongoDb } from '@/config';
 import { ResposneInformation } from '@/interfaces';
 import { informationRepository } from '@/repositories/informationRepository';
+import { getDateAndTime } from '@/utils/getDateAndTime';
 
 async function getInformation() {
   const upTime = process.uptime();
@@ -19,11 +20,13 @@ async function getInformation() {
     totalMemoryUsage += memoryUsage[key as keyof NodeJS.MemoryUsage];
   }
 
+  const lastUpdate = information?.date ? getDateAndTime(information.date) : 'Never';
+
   const response: ResposneInformation = {
-    memoryUsage: `${(totalMemoryUsage / 1024000).toFixed(2)} MB`,
-    lastUpdate: information?.date.toLocaleDateString() || 'Never',
+    lastUpdate, 
     upTime: apiUpTime,
     connection: dbTest?.connection ? 'Connected' : 'Disconnected',
+    memoryUsage: `${(totalMemoryUsage / 1024000).toFixed(2)} MB`,
     databaseRead: dbTest?.read ? 'Available' : 'Unavailable',
     databaseWrite: dbTest?.write ? 'Available' : 'Unavailable',
   };

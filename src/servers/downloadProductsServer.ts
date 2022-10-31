@@ -5,6 +5,7 @@ import Types, { FileProduct, Product } from '@/interfaces';
 import { productsRepository } from '@/repositories';
 import { getObjectWithout } from '@/utils/getObjectWithout';
 import AppLog from '@/events/AppLog';
+import { informationRepository } from '@/repositories/informationRepository';
 
 const BASE_URL = 'http://challenges.coode.sh/food/data/json';
 const LOCAL_PATH = './src/servers/data';
@@ -52,12 +53,21 @@ export async function transferPorductsToDatabase(
     await saveOnDatabase(listProducts);
     listProducts = [];
   }
+
+  informationRepository.insertInformation({
+    arquivesReaded,
+    date: new Date(),
+    arquivesToRead: filesName,
+    productUpdated: countProductsUpdated,
+    productInserted: countProductsInserted,
+  })
 }
 
 async function saveOnDatabase(listProduct: Product[]) {
   if (await productsRepository.hasProducts()) {
     await updateOnDatabase(listProduct);
   } else {
+    countProductsInserted += listProduct.length;
     await productsRepository.insertManyProducts(listProduct);
   }
 }
@@ -68,7 +78,9 @@ async function updateOnDatabase(listProduct: Product[]) {
     updatableProperties.code = product.code === "200" ? "" : product.code;
     const updatedProduct = getObjectWithout(updatableProperties, "");
     
-    await productsRepository.upsertProduct(updatedProduct, product);
+    const { productInserted, productUpdated } = await productsRepository.upsertProduct(updatedProduct, product);
+    countProductsInserted += productInserted || 0;
+    countProductsUpdated += productUpdated || 0;
   });
 }
 

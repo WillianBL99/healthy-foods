@@ -1,5 +1,5 @@
 import { mongoDb } from '@/config';
-import { Product } from '@/interfaces';
+import { Information, Product } from '@/interfaces';
 import { WithId } from 'mongodb';
 
 async function insertManyProducts(products: Product[]) {
@@ -11,8 +11,9 @@ async function insertManyProducts(products: Product[]) {
 async function upsertProduct(
   updatedProduct: Partial<Product>,
   product: Product
-) {
-  mongoDb.products(async (collection) => {
+): Promise<Partial<Information>> {
+  const count = { productUpdated: 0, productInserted: 0 };
+  return mongoDb.products(async (collection) => {
     const productUpdated = await collection.updateOne(
       { $or: [{ url: product.url }] },
       { $set: { ...updatedProduct } }
@@ -20,7 +21,12 @@ async function upsertProduct(
 
     if (!productUpdated.modifiedCount) {
       await collection.insertOne(product);
+      count.productInserted++;
+    } else {
+      count.productUpdated++;
     }
+
+    return count;
   });
 }
 
