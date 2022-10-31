@@ -39,3 +39,14 @@ export async function deleteProduct(req: Request, res: Response) {
     .send({ message: `Product ${code} trashed` })
     .status(httpStatus.NO_CONTENT);
 }
+
+export async function updateProduct(req: Request, res: Response) {
+  const { code } = req.params;
+  const product = req.body;
+
+  await productsService.updateProduct(code, product);
+
+  res
+    .send({ message: `Product ${code} updated` })
+    .status(httpStatus.NO_CONTENT);
+}

@@ -7,7 +7,7 @@ export type FileProduct = {
   buffer: string;
   countRows: number;
   stream: fs.ReadStream;
-}
+};
 
 export type Product = {
   code: string;
@@ -33,7 +33,12 @@ export type Product = {
   image_url: string;
   imported_t: number;
   status: string;
-}
+};
+
+export type ProductSchema = Omit<
+  Product,
+  'imported_t' | 'creator' | 'last_modified_t' | 'created_t' | 'code'
+>;
 
 export type Information = {
   date: Date;
@@ -41,7 +46,7 @@ export type Information = {
   productInserted: number;
   arquivesToRead: string[];
   arquivesReaded: string[];
-}
+};
 
 export type ResposneInformation = {
   connection: string;
@@ -50,4 +55,4 @@ export type ResposneInformation = {
   lastUpdate: string;
   upTime: string;
   memoryUsage: string;
-}
+};

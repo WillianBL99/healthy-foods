@@ -63,9 +63,17 @@ async function hasProducts(): Promise<boolean> {
   });
 }
 
+async function updateProduct(id: string, updatedProduct: Partial<Product>) {
+  await mongoDb.products(async (collection) => {
+    const _id = new ObjectId(id);
+    await collection.updateOne({ _id }, { $set: { ...updatedProduct } });
+  });
+}
+
 const productsRepository = {
   hasProducts,
   getProducts,
+  updateProduct,
   upsertProduct,
   findProductById,
   insertManyProducts,

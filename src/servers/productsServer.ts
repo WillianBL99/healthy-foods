@@ -1,6 +1,7 @@
 import AppError from '@/config/error';
 import { Product } from '@/interfaces';
 import { productsRepository } from '@/repositories';
+import { getObjectWithout } from '@/utils/getObjectWithout';
 import httpStatus from 'http-status';
 import { WithId } from 'mongodb';
 
@@ -38,8 +39,28 @@ async function deleteProductById(id: string): Promise<void> {
   await productsRepository.changeStatusProduct(id, 'trash');
 }
 
+async function updateProduct(id: string, product: Product): Promise<void> {
+  const productExists = await productsRepository.findProductById(id);
+
+  const { imported_t, ...updatableProperties } = product;
+  updatableProperties.code = product.code === '200' ? '' : product.code;
+  const updatedProduct = getObjectWithout(updatableProperties, '');
+
+  if (!productExists) {
+    throw new AppError(
+      'Product not found',
+      httpStatus.NOT_FOUND,
+      'Product not found',
+      'verify if the product exists or if the code is correct'
+    );
+  }
+
+  await productsRepository.updateProduct(id, updatedProduct);
+}
+
 const productsService = {
   getProducts,
+  updateProduct,
   getProductById,
   deleteProductById,
 };

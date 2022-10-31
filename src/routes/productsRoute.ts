@@ -2,8 +2,9 @@ import {
   deleteProduct,
   getProduct,
   getProducts,
+  updateProduct,
 } from '@/controllers/productsController';
-import { validateParams } from '@/middlewares/validateSchemaMiddleware';
+import { validateBody, validateParams } from '@/middlewares/validateSchemaMiddleware';
 import { productsSchema } from '@/schemas/productsSchema';
 import { Router } from 'express';
 
@@ -19,6 +20,12 @@ productsRoute.delete(
   '/products/:code',
   validateParams(productsSchema.codeParam),
   deleteProduct
+);
+productsRoute.put(
+  '/products/:code',
+  validateParams(productsSchema.codeParam),
+  validateBody(productsSchema.update),
+  updateProduct
 );
 
 export { productsRoute };

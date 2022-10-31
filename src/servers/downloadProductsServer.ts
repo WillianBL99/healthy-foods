@@ -74,7 +74,7 @@ async function saveOnDatabase(listProduct: Product[]) {
 
 async function updateOnDatabase(listProduct: Product[]) {
   listProduct.forEach(async (product) => {
-    const { last_modified_t, status, ...updatableProperties } = product;
+    const {imported_t, status, ...updatableProperties } = product;
     updatableProperties.code = product.code === "200" ? "" : product.code;
     const updatedProduct = getObjectWithout(updatableProperties, "");
     
