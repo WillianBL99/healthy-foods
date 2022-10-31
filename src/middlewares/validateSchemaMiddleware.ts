@@ -2,10 +2,17 @@ import { ObjectSchema } from 'joi';
 import { NextFunction, Request, Response } from 'express';
 import AppError from '@/config/error';
 
-export function validateSchema(schema: ObjectSchema) {
+export function validateBody(schema: ObjectSchema) {
+  return validate(schema, 'body');
+}
+
+export function validateParams(schema: ObjectSchema) {
+  return validate(schema, 'params');
+}
+
+function validate(schema: ObjectSchema, type: 'body' | 'params') {
   return (req: Request, _res: Response, next: NextFunction) => {
-    const { body } = req;
-    const { error } = schema.validate(body, { abortEarly: false });
+    const { error } = schema.validate(req[type], { abortEarly: false });
 
     if (error) {
       const message = error.details.map(handleErrorDetails);
@@ -26,6 +33,6 @@ function handleErrorDetails(detail: any) {
   const { message } = detail;
   const regex = /"/g;
 
-  const textReplaced = message.replace(regex, '\'').replace(regex, '\'');
+  const textReplaced = message.replace(regex, "'").replace(regex, "'");
   return textReplaced;
 }

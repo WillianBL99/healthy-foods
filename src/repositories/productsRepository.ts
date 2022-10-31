@@ -1,6 +1,6 @@
 import { mongoDb } from '@/config';
 import { Information, Product } from '@/interfaces';
-import { WithId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 
 async function getProducts(
   page: number,
@@ -49,9 +49,11 @@ async function changeStatusProduct(code: string, status: string) {
   });
 }
 
-async function findProduct(code: string) {
+async function findProductById(code: string) {
   return mongoDb.products(async (collection) => {
-    return (await collection.findOne({ code })) as WithId<Product> | null;
+    const _id = new ObjectId(code);
+    console.log({ _id }, 'id');
+    return (await collection.findOne({ _id })) as WithId<Product> | null;
   });
 }
 
@@ -62,12 +64,12 @@ async function hasProducts(): Promise<boolean> {
 }
 
 const productsRepository = {
-  insertManyProducts,
-  upsertProduct,
-  changeStatusProduct,
-  findProduct,
   hasProducts,
   getProducts,
+  upsertProduct,
+  findProductById,
+  insertManyProducts,
+  changeStatusProduct,
 };
 
 export { productsRepository };
