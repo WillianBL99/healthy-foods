@@ -6,6 +6,7 @@ import { mongoDb } from './config';
 import { informationRoute } from '@/routes';
 import { DatabaseUpdateRoutine } from './servers/databaseUpdateRoutine';
 import express, { Express, json } from 'express';
+import { productsRoute } from './routes/productsRoute';
 
 dotenv.config();
 const time = process.env.TIME_DATABASE_UPDATE ?? '00:00:00';
@@ -16,6 +17,7 @@ const app = express()
   .use(json())
   .use(cors())
   .use(informationRoute)
+  .use(productsRoute)
   .use(ExceptionHandler);
 
 export async function init(): Promise<Express> {

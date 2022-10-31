@@ -2,6 +2,19 @@ import { mongoDb } from '@/config';
 import { Information, Product } from '@/interfaces';
 import { WithId } from 'mongodb';
 
+async function getProducts(
+  page: number,
+  pagination: number
+): Promise<WithId<Product>[]> {
+  return mongoDb.products(async (collection) => {
+    return (await collection
+      .find()
+      .skip(page * pagination)
+      .limit(pagination)
+      .toArray()) as WithId<Product>[];
+  });
+}
+
 async function insertManyProducts(products: Product[]) {
   mongoDb.products(async (collection) => {
     await collection.insertMany(products);
@@ -54,6 +67,7 @@ const productsRepository = {
   changeStatusProduct,
   findProduct,
   hasProducts,
+  getProducts,
 };
 
 export { productsRepository };
