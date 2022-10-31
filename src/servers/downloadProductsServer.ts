@@ -3,7 +3,8 @@ import zlib from 'zlib';
 import request from 'request';
 import Types, { FileProduct, Product } from '@/interfaces';
 import { productsRepository } from '@/repositories';
-import { removeFromObject } from '@/utils/removeFromObject';
+import { getObjectWithout } from '@/utils/getObjectWithout';
+import AppLog from '@/events/AppLog';
 
 const BASE_URL = 'http://challenges.coode.sh/food/data/json';
 const LOCAL_PATH = './src/servers/data';
@@ -20,6 +21,9 @@ const filesName = [
 ];
 
 let listProducts: Product[] = [];
+let countProductsUpdated = 0;
+let countProductsInserted = 0;
+let arquivesReaded: string[] = [];
 
 export async function transferPorductsToDatabase(
   porductsPerFile: number = 100
@@ -42,6 +46,7 @@ export async function transferPorductsToDatabase(
 
     // delete json file
     fs.unlink(uriJsonFilePath, () => {});
+    arquivesReaded.push(fileName);
 
     // save on database
     await saveOnDatabase(listProducts);
@@ -59,8 +64,10 @@ async function saveOnDatabase(listProduct: Product[]) {
 
 async function updateOnDatabase(listProduct: Product[]) {
   listProduct.forEach(async (product) => {
-    const { code, last_modified_t, status, ...updatedProduct } = product;
-    removeFromObject(updatedProduct, "");
+    const { last_modified_t, status, ...updatableProperties } = product;
+    updatableProperties.code = product.code === "200" ? "" : product.code;
+    const updatedProduct = getObjectWithout(updatableProperties, "");
+    
     await productsRepository.upsertProduct(updatedProduct, product);
   });
 }
@@ -70,7 +77,7 @@ async function downloadFile(url: string, uriZipFile: string) {
     request(url)
       .pipe(fs.createWriteStream(uriZipFile))
       .on('finish', () => {
-        console.log(`downloaded ${uriZipFile}`);
+        AppLog('Server', `downloaded ${url}`);
         resolve();
       });
   });
@@ -82,7 +89,7 @@ async function parseJsonFile(uriZipFile: string, uriJsonFile: string) {
       .pipe(zlib.createGunzip())
       .pipe(fs.createWriteStream(uriJsonFile))
       .on('finish', () => {
-        console.log(`unziped ${uriZipFile}`);
+        AppLog('Server', `unziped ${uriZipFile}`);
         resolve();
       });
   });
@@ -108,12 +115,10 @@ async function readJsonFileStream(
     });
 
     arquive.stream.on('close', () => {
-      console.log('product rows readed', arquive.countRows);
       resolve();
     });
 
     arquive.stream.on('end', () => {
-      console.log('end reading file', arquive.countRows);
       resolve();
     });
   });
