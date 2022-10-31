@@ -1,17 +1,17 @@
 import { mongoDb } from '@/config';
-import { Information, Product } from '@/interfaces';
+import { Information, Product, ProductDB } from '@/interfaces';
 import { ObjectId, WithId } from 'mongodb';
 
 async function getProducts(
   page: number,
   pagination: number
-): Promise<WithId<Product>[]> {
+): Promise<ProductDB[]> {
   return mongoDb.products(async (collection) => {
     return (await collection
       .find()
       .skip(page * pagination)
       .limit(pagination)
-      .toArray()) as WithId<Product>[];
+      .toArray()) as ProductDB[];
   });
 }
 
@@ -53,7 +53,7 @@ async function changeStatusProduct(id: string, status: string) {
 async function findProductById(id: string) {
   return mongoDb.products(async (collection) => {
     const _id = new ObjectId(id);
-    return (await collection.findOne({ _id })) as WithId<Product> | null;
+    return (await collection.findOne({ _id })) as ProductDB | null;
   });
 }
 

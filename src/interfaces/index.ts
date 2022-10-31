@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { WithId } from 'mongodb';
 
 type Types<V> = { [key: string]: V };
 export default Types;
@@ -34,6 +35,8 @@ export type Product = {
   imported_t: number;
   status: string;
 };
+
+export type ProductDB = WithId<Product>;
 
 export type ProductSchema = Omit<
   Product,

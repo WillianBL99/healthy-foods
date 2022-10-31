@@ -1,39 +1,27 @@
-import AppError from '@/config/error';
-import { Product } from '@/interfaces';
-import { productsRepository } from '@/repositories';
+import { Product, ProductDB } from '@/interfaces';
 import { getObjectWithout } from '@/utils/getObjectWithout';
-import httpStatus from 'http-status';
-import { WithId } from 'mongodb';
+import { productsRepository } from '@/repositories';
+import { CONFLICT_DELETE, NOT_FOUND } from '@/events';
 
 async function getProducts(
   page: number,
   pagination: number
-): Promise<WithId<Product>[]> {
+): Promise<ProductDB[]> {
   return await productsRepository.getProducts(page, pagination);
 }
 
-async function getProductById(id: string): Promise<WithId<Product> | null> {
+async function getProductById(id: string): Promise<ProductDB | null> {
   return await productsRepository.findProductById(id);
 }
 
 async function deleteProductById(id: string): Promise<void> {
   const product = await productsRepository.findProductById(id);
   if (!product) {
-    throw new AppError(
-      'Product not found',
-      httpStatus.NOT_FOUND,
-      'Product not found',
-      'verify if the product exists or if the code is correct'
-    );
+    throw NOT_FOUND();
   }
 
   if (product.status === 'trash') {
-    throw new AppError(
-      'Product already deleted',
-      httpStatus.CONFLICT,
-      'Product already deleted',
-      'products with status trash cannot be deleted again'
-    );
+    throw CONFLICT_DELETE();
   }
 
   await productsRepository.changeStatusProduct(id, 'trash');
@@ -47,12 +35,7 @@ async function updateProduct(id: string, product: Product): Promise<void> {
   const updatedProduct = getObjectWithout(updatableProperties, '');
 
   if (!productExists) {
-    throw new AppError(
-      'Product not found',
-      httpStatus.NOT_FOUND,
-      'Product not found',
-      'verify if the product exists or if the code is correct'
-    );
+    throw NOT_FOUND();
   }
 
   await productsRepository.updateProduct(id, updatedProduct);
