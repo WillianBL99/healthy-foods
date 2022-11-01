@@ -7,7 +7,7 @@
     "start": "node dist/server.js",
     "build": "npx tsc --outDir dist",
     "dev": "ts-node-dev -r tsconfig-paths/register src/server.ts",
-    "test": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env.test jest -- -i --verbose=true"
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -42,6 +42,7 @@
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.1.0",
     "tslib": "^2.4.0",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "vitest": "^0.24.4"
   }
 }
