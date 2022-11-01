@@ -1,6 +1,7 @@
 import AppLog from '@/events/AppLog';
+import { Information, Product, ProductParams } from '@/interfaces';
 import dotenv from 'dotenv';
-import { Collection, Db, Document, MongoClient } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 dotenv.config();
 
 const uri = process.env.MONGO_URI || '';
@@ -40,29 +41,28 @@ export async function connectionTest() {
       write: result ? true : false,
       read: result ? true : false,
     };
-
   } catch (error) {
     AppLog('Database', error);
     return undefined;
   }
 }
 
-export async function products<T extends Document, R>(
-  callback: (collection: Collection<T>) => Promise<R>
-) {
-  return await callback(database.collection('products'));
-}
+export class Models {
+  static information() {
+    return database.collection<Information>('information');
+  }
 
-export async function information<T extends Document, R>(
-  callback: (collection: Collection<T>) => Promise<R>
-) {
-  return await callback(database.collection('information'));
+  static products() {
+    return database.collection<Product>('products');
+  }
+
+  static paramsUpdated() {
+    return database.collection<ProductParams>('paramsUpdated');
+  }
 }
 
 export const mongoDb = {
   connect,
   disconnect,
-  products,
-  information,
   connectionTest,
 };

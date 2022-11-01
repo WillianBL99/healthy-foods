@@ -1,5 +1,5 @@
 import { CronJob } from 'cron';
-import { transferPorductsToDatabase } from './downloadProductsServer';
+import { upadateDatabaseServer } from '@/servers/downloadProductsServer';
 
 export class DatabaseUpdateRoutine {
   hours: number | undefined;
@@ -16,9 +16,11 @@ export class DatabaseUpdateRoutine {
   public start() {
     new CronJob(
       `${this.seconds} ${this.minutes} ${this.hours} * * *`,
-      () => {
+      async () => {
         console.log('Starting database update routine');
-        this.updateDatabase();
+        console.time('download');
+        await this.updateDatabase();
+        console.timeEnd('download');
       },
       null,
       true,
@@ -28,6 +30,6 @@ export class DatabaseUpdateRoutine {
   }
 
   private async updateDatabase() {
-    await transferPorductsToDatabase();
+    await upadateDatabaseServer();
   }
 }

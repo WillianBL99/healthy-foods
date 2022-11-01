@@ -4,7 +4,7 @@ import { WithId } from 'mongodb';
 type Types<V> = { [key: string]: V };
 export default Types;
 
-export type FileProduct = {
+export type FileProductStream = {
   buffer: string;
   countRows: number;
   stream: fs.ReadStream;
@@ -38,6 +38,8 @@ export type Product = {
 
 export type ProductDB = WithId<Product>;
 
+export type ProductParams = (keyof Product)[];
+
 export type ProductSchema = Omit<
   Product,
   'imported_t' | 'creator' | 'last_modified_t' | 'created_t' | 'code'
@@ -45,11 +47,18 @@ export type ProductSchema = Omit<
 
 export type Information = {
   date: Date;
-  productUpdated: number;
-  productInserted: number;
+  productsUpdated: number;
+  productsInserted: number;
   arquivesToRead: string[];
   arquivesReaded: string[];
 };
+
+export type InformationDB = WithId<Information>;
+
+export type CountProducts = Pick<
+  Information,
+  'productsInserted' | 'productsUpdated'
+>;
 
 export type ResposneInformation = {
   connection: string;
