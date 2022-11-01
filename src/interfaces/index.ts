@@ -38,6 +38,8 @@ export type Product = {
 
 export type ProductDB = WithId<Product>;
 
+export type ProductParams = (keyof Product)[];
+
 export type ProductSchema = Omit<
   Product,
   'imported_t' | 'creator' | 'last_modified_t' | 'created_t' | 'code'

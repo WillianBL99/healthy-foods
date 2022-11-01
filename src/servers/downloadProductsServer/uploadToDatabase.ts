@@ -1,6 +1,6 @@
-import { CountProducts, Product } from '@/interfaces';
+import { productsService } from '../productsServer';
 import { productsRepository } from '@/repositories';
-import { getObjectWithout } from '@/utils/getObjectWithout';
+import { CountProducts, Product } from '@/interfaces';
 
 export async function uploadToDatabase(
   listProduct: Product[],
@@ -20,14 +20,12 @@ async function updateOnDatabase(
   coutUpload: CountProducts
 ) {
   for (const product of listProduct) {
-    const { imported_t, status, ...updatableProperties } = product;
-    updatableProperties.code = product.code === '200' ? '' : product.code;
-    const updatedProduct = getObjectWithout(updatableProperties, '');
-
     const { productsInserted, productsUpdated } =
-      await productsRepository.upsertProduct(updatedProduct, product);
+      await productsService.uploadProduct(product);
+
     coutUpload.productsUpdated += productsUpdated || 0;
     coutUpload.productsInserted += productsInserted || 0;
+
     console.log('updateOnDatabase', coutUpload);
   }
 }

@@ -1,5 +1,5 @@
 import AppLog from '@/events/AppLog';
-import { Information, Product } from '@/interfaces';
+import { Information, Product, ProductParams } from '@/interfaces';
 import dotenv from 'dotenv';
 import { Db, MongoClient } from 'mongodb';
 dotenv.config();
@@ -54,6 +54,10 @@ export class Models {
 
   static products() {
     return database.collection<Product>('products');
+  }
+
+  static paramsUpdated() {
+    return database.collection<ProductParams>('paramsUpdated');
   }
 }
 
