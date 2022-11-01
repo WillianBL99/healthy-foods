@@ -2,6 +2,7 @@ import { CountProducts } from '@/interfaces';
 import { uploadToDatabase } from './uploadToDatabase';
 import { informationRepository } from '@/repositories/informationRepository';
 import { paths, HadleArquivesServer } from '@/servers/downloadProductsServer';
+import AppLog from '@/events/AppLog';
 
 const { filesName } = paths;
 
@@ -21,10 +22,10 @@ export async function upadateDatabaseServer(porductsPerFile: number = 100) {
       jsonFileLocalPath,
       porductsPerFile
     );
-    console.log('downloaded', fileName);
+    AppLog('Service', `Downloaded ${fileName}`);
     arquivesReaded.push(fileName);
     await uploadToDatabase(listProducts, countProducts);
-    console.log('uploaded', fileName);
+    AppLog('Service', `Uploaded ${fileName}`);
   }
 
   informationRepository.insertInformation({

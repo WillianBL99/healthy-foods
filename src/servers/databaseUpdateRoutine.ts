@@ -1,5 +1,6 @@
 import { CronJob } from 'cron';
 import { upadateDatabaseServer } from '@/servers/downloadProductsServer';
+import AppLog from '@/events/AppLog';
 
 export class DatabaseUpdateRoutine {
   hours: number | undefined;
@@ -17,7 +18,7 @@ export class DatabaseUpdateRoutine {
     new CronJob(
       `${this.seconds} ${this.minutes} ${this.hours} * * *`,
       async () => {
-        console.log('Starting database update routine');
+        AppLog('Service', 'Starting database update routine');
         console.time('download');
         await this.updateDatabase();
         console.timeEnd('download');

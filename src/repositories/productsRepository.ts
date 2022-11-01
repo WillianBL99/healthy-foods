@@ -33,7 +33,6 @@ async function insertOneProduct(product: Product): Promise<void> {
 
 async function insertManyProducts(products: Product[]): Promise<void> {
   await Models.products().insertMany(products);
-  console.log('insertManyProducts', products.length);
 }
 
 async function changeStatusProduct(id: string, status: string): Promise<void> {
@@ -58,7 +57,6 @@ async function updateProduct(
 ): Promise<void> {
   const _id = new ObjectId(id);
   await updateOne(_id, updatedProduct);
-  console.log({ updatedProduct });
 }
 
 const productsRepository = {

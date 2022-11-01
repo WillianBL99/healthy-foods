@@ -39,6 +39,9 @@ async function updateProduct(id: string, product: Product): Promise<void> {
   if (product.code === '200') paramsToRemove.push('code');
 
   const updatedProduct = removeParams(product, paramsToRemove);
+  const paramsToPush = Object.keys(updatedProduct) as ProductParams;
+
+  productParamsRepository.pushParams(new ObjectId(id), paramsToPush);
   await productsRepository.updateProduct(id, updatedProduct);
 }
 

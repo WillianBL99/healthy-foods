@@ -28,7 +28,7 @@ const AppLog = (
     | 'red'; */
 
 
-  console.log(`[${type}] ${text}`);
+  console.log(`[${type}]`, text);
   if (text.detail) {
     console.log(text.detail);
   }
