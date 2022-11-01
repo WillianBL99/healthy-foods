@@ -1,73 +1,61 @@
-import { mongoDb } from '@/config';
-import { Information, Product, ProductDB } from '@/interfaces';
+import { Models } from '@/config';
+import { CountProducts, Product, ProductDB } from '@/interfaces';
 import { ObjectId } from 'mongodb';
 
 async function getProducts(
   page: number,
   pagination: number
 ): Promise<ProductDB[]> {
-  return mongoDb.products(async (collection) => {
-    return (await collection
-      .find()
-      .skip(page * pagination)
-      .limit(pagination)
-      .toArray()) as ProductDB[];
-  });
+  return (await Models.products()
+    .find()
+    .skip(page * pagination)
+    .limit(pagination)
+    .toArray()) as ProductDB[];
 }
 
 async function insertManyProducts(products: Product[]) {
-  mongoDb.products(async (collection) => {
-    await collection.insertMany(products);
-  });
+  await Models.products().insertMany(products);
+  console.log('insertManyProducts', products.length);
 }
 
 async function upsertProduct(
   updatedProduct: Partial<Product>,
   product: Product
-): Promise<Partial<Information>> {
-  const count = { productUpdated: 0, productInserted: 0 };
-  return mongoDb.products(async (collection) => {
-    const productUpdated = await collection.updateOne(
-      { $or: [{ url: product.url }] },
-      { $set: { ...updatedProduct } }
-    );
+): Promise<CountProducts> {
+  const count: CountProducts = { productsUpdated: 0, productsInserted: 0 };
 
-    if (!productUpdated.modifiedCount) {
-      await collection.insertOne(product);
-      count.productInserted++;
-    } else {
-      count.productUpdated++;
-    }
+  const productsUpdated = await Models.products().updateOne(
+    { url: product.url },
+    { $set: { ...updatedProduct } }
+  );
 
-    return count;
-  });
+  if (!productsUpdated.matchedCount) {
+    await Models.products().insertOne(product);
+    count.productsInserted++;
+  } else {
+    count.productsUpdated++;
+  }
+
+  return count;
 }
 
 async function changeStatusProduct(id: string, status: string) {
-  await mongoDb.products(async (collection) => {
-    const _id = new ObjectId(id);
-    await collection.updateOne({ _id }, { $set: { status } });
-  });
+  const _id = new ObjectId(id);
+  await Models.products().updateOne({ _id }, { $set: { status } });
 }
 
 async function findProductById(id: string) {
-  return mongoDb.products(async (collection) => {
-    const _id = new ObjectId(id);
-    return (await collection.findOne({ _id })) as ProductDB | null;
-  });
+  const _id = new ObjectId(id);
+  return (await Models.products().findOne({ _id })) as ProductDB | null;
 }
 
 async function hasProducts(): Promise<boolean> {
-  return mongoDb.products(async (collection) => {
-    return !!(await collection.countDocuments());
-  });
+  return !!(await Models.products().countDocuments());
 }
 
 async function updateProduct(id: string, updatedProduct: Partial<Product>) {
-  await mongoDb.products(async (collection) => {
-    const _id = new ObjectId(id);
-    await collection.updateOne({ _id }, { $set: { ...updatedProduct } });
-  });
+  const _id = new ObjectId(id);
+  await Models.products().updateOne({ _id }, { $set: { ...updatedProduct } });
 }
 
 const productsRepository = {

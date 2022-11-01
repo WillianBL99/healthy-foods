@@ -1,11 +1,11 @@
 class AppError {
-  log;
-  statusCode;
-  message;
-  detail;
+  log: string | Error;
+  statusCode: number;
+  message: string;
+  detail: string;
 
   constructor(
-    log = 'Something went wrong',
+    log: string | Error = 'Something went wrong',
     statusCode = 400,
     message = 'Something went wrong',
     detail = 'An unexpected error occurred'

@@ -1,17 +1,15 @@
-import { mongoDb } from '@/config';
-import { Information } from '@/interfaces';
-import { WithId } from 'mongodb';
+import { Models } from '@/config';
+import { Information, InformationDB } from '@/interfaces';
 
 async function insertInformation(information: Information) {
-  await mongoDb.information(async (collection) => {
-    await collection.insertOne(information);
-  });
+  await Models.information().insertOne(information);
 }
 
-async function getLastInformation(): Promise<WithId<Information> | null> {
-  return mongoDb.information(async (collection) => {
-    return await collection.findOne({}, { sort: { date: -1 } }) as WithId<Information> | null;
-  });
+async function getLastInformation(): Promise<InformationDB | null> {
+  return (await Models.information().findOne(
+    {},
+    { sort: { date: -1 } }
+  )) as InformationDB | null;
 }
 
 const informationRepository = {

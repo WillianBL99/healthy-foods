@@ -19,4 +19,26 @@ const CONFLICT_DELETE = () => {
   );
 };
 
-export { NOT_FOUND, CONFLICT_DELETE };
+const ERROR_UNZIP_AND_SAVE_FILE = (error: Error) => {
+  return new AppError(
+    error,
+    httpStatus.INTERNAL_SERVER_ERROR,
+    'Error on unzip and save file'
+  );
+};
+
+const ERROR_ON_DOWNLOAD_FILE = (error: Error) => {
+  return new AppError(
+    error,
+    httpStatus.INTERNAL_SERVER_ERROR,
+    'Error on download file',
+    'verify if the url is correct'
+  );
+};
+
+export {
+  NOT_FOUND,
+  CONFLICT_DELETE,
+  ERROR_UNZIP_AND_SAVE_FILE,
+  ERROR_ON_DOWNLOAD_FILE,
+};
