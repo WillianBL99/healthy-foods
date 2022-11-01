@@ -1,6 +1,7 @@
 import { productsService } from '../productsServer';
 import { productsRepository } from '@/repositories';
 import { CountProducts, Product } from '@/interfaces';
+import AppLog from '@/events/AppLog';
 
 export async function uploadToDatabase(
   listProduct: Product[],
@@ -12,7 +13,6 @@ export async function uploadToDatabase(
     await productsRepository.insertManyProducts(listProduct);
     countUpload.productsInserted += listProduct.length;
   }
-  console.log('uploadToDatabase', countUpload);
 }
 
 async function updateOnDatabase(
@@ -25,7 +25,6 @@ async function updateOnDatabase(
 
     coutUpload.productsUpdated += productsUpdated || 0;
     coutUpload.productsInserted += productsInserted || 0;
-
-    console.log('updateOnDatabase', coutUpload);
+    AppLog('Service', coutUpload);
   }
 }

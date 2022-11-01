@@ -2,15 +2,22 @@ import { Models } from '@/config';
 import { ProductParams } from '@/interfaces';
 import { ObjectId } from 'mongodb';
 
+type ProductParamsDB = {
+  _id: ObjectId;
+  params: ProductParams;
+};
 async function getParams(_id: ObjectId) {
-  const params = await Models.paramsUpdated().findOne({ _id });
-  return params as ProductParams | null;
+  const paramsFinded = (await Models.paramsUpdated().findOne({
+    _id,
+  })) as ProductParamsDB | null;
+  return paramsFinded?.params || [];
 }
 
-async function pushParams(_id: string, params: ProductParams) {
+async function pushParams(_id: ObjectId, params: ProductParams) {
   await Models.paramsUpdated().updateOne(
     { _id },
-    { $push: { params: { $each: params } } }
+    { $push: { params: { $each: params } } },
+    { upsert: true }
   );
 }
 
