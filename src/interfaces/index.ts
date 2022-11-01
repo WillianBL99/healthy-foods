@@ -27,8 +27,8 @@ export type Product = {
   ingredients_text: string;
   traces: string;
   serving_size: string;
-  serving_quantity: number;
-  nutriscore_score: number;
+  serving_quantity: string;
+  nutriscore_score: string;
   nutriscore_grade: string;
   main_category: string;
   image_url: string;
