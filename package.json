@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/src/server.js",
   "scripts": {
-    "build": "ttsc -p tsconfig.json && rm -rf dist/test",
+    "build": "ttsc -p tsconfig.json",
     "dev": "npm run dev:load-envs nodemon",
     "dev:load-envs": "dotenv -e .env.development",
     "docker:build": "npm run docker:load-envs ttsc -p tsconfig.json",

@@ -45,6 +45,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src", "tests"],
-  // regex for the fiele ex: products.feature
-  "exclude": ["node_modules", "**/*.feature"]
+  "exclude": ["**/*.feature"]
 }
