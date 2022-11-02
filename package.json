@@ -7,7 +7,8 @@
     "start": "node dist/server.js",
     "build": "npx tsc --outDir dist",
     "dev": "ts-node-dev -r tsconfig-paths/register src/server.ts",
-    "test": "vitest"
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "request": "^2.88.2"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "@tsconfig/node16": "^1.0.3",
     "@types/cors": "^2.8.12",
     "@types/cron": "^2.0.0",
@@ -32,6 +34,7 @@
     "@types/request": "^2.48.8",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
+    "@vitest/coverage-c8": "^0.24.5",
     "dotenv": "^16.0.3",
     "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.5.0",

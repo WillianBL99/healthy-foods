@@ -28,7 +28,10 @@ async function deleteProductById(id: string): Promise<void> {
   await productsRepository.changeStatusProduct(id, 'trash');
 }
 
-async function updateProduct(id: string, product: Product): Promise<void> {
+async function updateProduct(
+  id: string,
+  product: Partial<Product>
+): Promise<void> {
   const productExists = await productsRepository.findProductById(id);
 
   if (!productExists) {
