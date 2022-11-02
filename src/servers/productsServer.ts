@@ -28,7 +28,10 @@ async function deleteProductById(id: string): Promise<void> {
   await productsRepository.changeStatusProduct(id, 'trash');
 }
 
-async function updateProduct(id: string, product: Product): Promise<void> {
+async function updateProduct(
+  id: string,
+  product: Partial<Product>
+): Promise<void> {
   const productExists = await productsRepository.findProductById(id);
 
   if (!productExists) {
@@ -52,8 +55,7 @@ async function uploadProduct(product: Product): Promise<CountProducts> {
 
   const productFinded = await productsRepository.getProduct('url', product.url);
   if (productFinded) {
-    const params =
-      (await productParamsRepository.getParams(productFinded._id)) || [];
+    const params = await productParamsRepository.getParams(productFinded._id);
     listParamsToRemove = [...listParamsToRemove, ...params];
     const updatedProduct = removeParams(product, listParamsToRemove);
 

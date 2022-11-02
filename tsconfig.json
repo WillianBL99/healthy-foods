@@ -33,7 +33,7 @@
     "rootDirs": ["src", "tests"],
     "baseUrl": "src",
     "paths": {
-      "@/*": ["*"],
+      "@/*": ["*"]
     },
     "plugins": [
       {
@@ -45,5 +45,6 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src", "tests"],
-  "exclude": ["node_modules"]
+  // regex for the fiele ex: products.feature
+  "exclude": ["node_modules", "**/*.feature"]
 }

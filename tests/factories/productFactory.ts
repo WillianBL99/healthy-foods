@@ -1,38 +1,40 @@
 import { ProductDB } from '@/interfaces';
 import { ObjectId } from 'mongodb';
+import { faker } from '@faker-js/faker';
 
-const products: ProductDB[] = [
-  {
-    _id: new ObjectId('5f9f1b9b9c9d9c0b8c0b9b9b'),
-    brands: 'coca fanta',
-    categories: 'bebidas',
-    cities: 'bogota',
-    code: '200',
-    created_t: 1602000000,
-    creator: 'some user',
-    image_url:
-      'https://static.openfoodfacts.org/images/products/200/000/000/0000/front_fr.3.400.jpg',
-    imported_t: 1602000000,
-    ingredients_text: 'agua, azucar, gas',
-    labels: 'coca cola',
-    last_modified_t: 1602000000,
-    main_category: 'bebidas',
-    nutriscore_grade: 'a',
-    nutriscore_score: '1',
-    product_name: 'coca cola',
-    purchase_places: 'bogota',
-    quantity: '1',
-    serving_quantity: '1',
-    serving_size: '1',
-    status: 'publisher',
-    stores: 'coca cola',
-    traces: 'coca cola',
-    url: 'https://static.openfoodfacts.org/images/products/200/000/000/0000/front_fr.3.400.jpg',
-  },
-];
+const product: ProductDB = {
+  _id: new ObjectId(faker.database.mongodbObjectId()),
+  brands: faker.commerce.productName(),
+  categories: faker.commerce.product(),
+  cities: faker.word.conjunction(),
+  code: faker.random.numeric(13),
+  created_t: new Date(faker.date.past(10)),
+  creator: faker.name.firstName(),
+  image_url: faker.image.imageUrl(),
+  imported_t: new Date(faker.date.past(10)),
+  ingredients_text: faker.lorem.sentence(),
+  labels: faker.lorem.sentence(),
+  last_modified_t: new Date(faker.date.past(10)),
+  main_category: faker.commerce.department(),
+  nutriscore_grade: faker.word.conjunction(),
+  nutriscore_score: faker.random.numeric(2),
+  product_name: faker.commerce.productName(),
+  purchase_places: faker.random.locale(),
+  quantity: faker.random.numeric(2),
+  serving_quantity: faker.random.numeric(2),
+  serving_size: faker.random.numeric(2),
+  status: faker.helpers.arrayElement(['published', 'draft', 'trash']),
+  stores: faker.random.locale(),
+  traces: faker.lorem.sentence(),
+  url: faker.internet.url(),
+};
 
-function getProducts(): ProductDB[] {
-  return products;
+function getProducts(_page: number = 0, pagination: number = 25): ProductDB[] {
+  const listProducts: ProductDB[] = [];
+  for (let i = 0; i < pagination; i++) {
+    listProducts.push(product);
+  }
+  return listProducts;
 }
 
 const productFactory = {

@@ -14,8 +14,8 @@ export type Product = {
   code: string;
   url: string;
   creator: string;
-  created_t: number;
-  last_modified_t: number;
+  created_t: Date;
+  last_modified_t: Date;
   product_name: string;
   quantity: string;
   brands: string;
@@ -32,7 +32,7 @@ export type Product = {
   nutriscore_grade: string;
   main_category: string;
   image_url: string;
-  imported_t: number;
+  imported_t: Date;
   status: string;
 };
 
