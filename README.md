@@ -59,6 +59,8 @@ This porject can be used in four ways:
 
 ### 1 Development mode
 
+To run the project in development mode, create a `.env.development` file based on the `.env.example` file and run the following command:
+
 ```bash
 $ npm run dev
 #or
@@ -66,6 +68,8 @@ $ yarn run dev
 ```
 
 ### 2 Production mode
+
+To run the project in production mode, create a `.env.production` file based on the `.env.example` file and run the following command:
 
 ```bash
 $ npm run build && npm run start
@@ -75,6 +79,8 @@ $ yarn run build && yarn run start
 
 ### 3 Docker compose
 
+To run the project in docker compose, create a `.env.docker` file based on the `.env.example` file and run the following command:
+
 ```bash
 $ npm run docker
 #or
@@ -83,7 +89,9 @@ $ yarn run docker
 
 ### 4 Tests
 
-run all tests once
+To run the tests, create a `.env.test` file based on the `.env.example` file.
+
+to run the unit tests once, run the following command:
 
 ```bash
 $ npm run test
@@ -91,7 +99,7 @@ $ npm run test
 $ yarn run test
 ```
 
-run all tests in watch mode
+to run the unit tests in watch mode, run the following command:
 
 ```bash
 $ npm run test:watch
@@ -99,7 +107,7 @@ $ npm run test:watch
 $ yarn run test:watch
 ```
 
-run all tests in coverage mode
+to run the unit tests in coverage mode, run the following command:
 
 ```bash
 $ npm run test:coverage
