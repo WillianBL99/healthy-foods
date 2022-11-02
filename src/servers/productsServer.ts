@@ -55,8 +55,7 @@ async function uploadProduct(product: Product): Promise<CountProducts> {
 
   const productFinded = await productsRepository.getProduct('url', product.url);
   if (productFinded) {
-    const params =
-      (await productParamsRepository.getParams(productFinded._id)) || [];
+    const params = await productParamsRepository.getParams(productFinded._id);
     listParamsToRemove = [...listParamsToRemove, ...params];
     const updatedProduct = removeParams(product, listParamsToRemove);
 
