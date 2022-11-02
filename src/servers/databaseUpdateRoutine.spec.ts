@@ -33,10 +33,6 @@ describe('databaseUpdateRoutine', () => {
       vi.useRealTimers();
       const time = '02:55:00';
       const databaseUpdateRoutine = new DatabaseUpdateRoutine(time);
-      const spyUpdateDatabase = vi.spyOn(
-        databaseUpdateRoutine,
-        'updateDatabase'
-      );
       const spyStart = vi.spyOn(databaseUpdateRoutine, 'start');
 
       databaseUpdateRoutine.start();
