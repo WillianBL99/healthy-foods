@@ -44,9 +44,9 @@ $ git clone git@github.com:WillianBL99/healthy-foods.git
 Install the dependencies.
 
 ```bash
-$ npm install
+$ cd healthy-foods && npm install
 #or
-$ yarn
+$ cd healthy-foods &&  yarn
 ```
 
 ## 🚀 Usage
