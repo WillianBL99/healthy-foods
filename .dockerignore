@@ -1,7 +1,6 @@
 README.MD
 vitest.config.ts
 node_modules
-src
 test
 features
 coverage
