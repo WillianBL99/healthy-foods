@@ -1,34 +1,47 @@
 import { unlink } from 'fs';
-import { promisify } from 'util';
 import { createGunzip } from 'zlib';
 import { createReadStream } from 'fs';
-import { createWriteStream } from 'fs';
 import Types, { FileProductStream, Product } from '@/interfaces';
-import {
-  AppError,
-  ERROR_ON_DOWNLOAD_FILE,
-  ERROR_UNZIP_AND_SAVE_FILE,
-} from '@/events';
+import { AppError, ERROR_ON_DOWNLOAD_FILE } from '@/events';
 
 import Axios from 'axios';
-import * as stream from 'stream';
 import httpStatus from 'http-status';
 
 export class HadleArquivesServer {
   private static listProducts: Product[] = [];
   static async download(fileUrl: string, outputLocationPath: string) {
+    console.log(`Downloading file from ${outputLocationPath}`);
     const unzip = createGunzip();
-    const writer = createWriteStream(outputLocationPath);
-    const finished = promisify(stream.finished);
+
+    const arquive = {
+      buffer: '',
+      countRows: 0,
+    };
 
     return Axios({ method: 'GET', url: fileUrl, responseType: 'stream' })
       .then(async (response) => {
-        response.data.pipe(unzip).pipe(writer);
-        return finished(writer).catch((error) => {
-          writer.close();
-          writer.destroy();
-          throw ERROR_UNZIP_AND_SAVE_FILE(error);
+        response.data.pipe(unzip).on('data', (chunk: any) => {
+          arquive.buffer += chunk.toString();
+
+          let pos;
+          while ((pos = arquive.buffer.indexOf('\n')) >= 0) {
+            // got a full line
+            if (pos == 0) {
+              arquive.buffer = arquive.buffer.slice(1);
+              continue;
+            }
+
+            HadleArquivesServer.processLine(arquive.buffer.slice(0, pos));
+
+            arquive.countRows++;
+            arquive.buffer = arquive.buffer.slice(pos + 1);
+          }
         });
+
+        if (arquive.countRows >= 2) {
+          unzip.close();
+          return true;
+        }
       })
       .catch((error) => {
         throw ERROR_ON_DOWNLOAD_FILE(error);
@@ -112,7 +125,8 @@ export class HadleArquivesServer {
 
     if (line.length > 0) {
       const product = this.parseNewProduct(JSON.parse(line));
-      this.listProducts.push(product);
+      //this.listProducts.push(product);
+      console.log({ product });
     }
   }
 
