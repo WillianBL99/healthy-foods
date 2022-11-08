@@ -4,7 +4,6 @@ import { informationRepository } from '@/repositories/informationRepository';
 import { paths, HadleArquivesServer } from '@/servers/downloadProductsServer';
 import AppLog from '@/events/AppLog';
 
-const { filesName } = paths;
 
 let arquivesReaded: string[] = [];
 const countProducts: CountProducts = {
@@ -12,26 +11,39 @@ const countProducts: CountProducts = {
   productsUpdated: 0,
 };
 
-export async function upadateDatabaseServer(porductsPerFile: number = 100) {
-  for (const fileName of filesName) {
-    const zipFileUrl = paths.zipFileUrl(fileName);
-    const jsonFileLocalPath = paths.jsonFileLocalPath(fileName);
+export async function upadateDatabaseServer(productsPerFile: number = 100) {
+  const promisies: Promise<void>[] = [];
+  const filesName = await HadleArquivesServer.importFilesName();
+  console.log({ filesName });
 
-    await HadleArquivesServer.download(zipFileUrl, jsonFileLocalPath);
-    const listProducts = await HadleArquivesServer.readJsonFileStream(
-      jsonFileLocalPath,
-      porductsPerFile
+  for (const fileName of filesName) {
+    promisies.push(
+      new Promise(async (resolve) => {
+        const zipFileUrl = paths.zipFileUrl(fileName);
+
+        const hadleArquivesServer = new HadleArquivesServer();
+        const listProducts = await hadleArquivesServer.download(
+          zipFileUrl,
+          productsPerFile
+        );
+
+        AppLog('Service', `Readed ${fileName}`);
+        arquivesReaded.push(fileName);
+        await uploadToDatabase(listProducts, countProducts);
+        AppLog('Service', `Uploaded ${fileName}`);
+        resolve();
+      })
     );
-    AppLog('Service', `Downloaded ${fileName}`);
-    arquivesReaded.push(fileName);
-    await uploadToDatabase(listProducts, countProducts);
-    AppLog('Service', `Uploaded ${fileName}`);
   }
 
-  informationRepository.insertInformation({
-    ...countProducts,
-    arquivesReaded,
-    arquivesToRead: filesName,
-    date: new Date(),
+  await Promise.all(promisies).then(() => {
+    informationRepository.insertInformation({
+      ...countProducts,
+      arquivesReaded,
+      arquivesToRead: filesName,
+      date: new Date(),
+    });
+
+    return;
   });
 }

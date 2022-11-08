@@ -12,6 +12,7 @@ dotenv.config();
 //const time = process.env.TIME_DATABASE_UPDATE ?? '00:00:00';
 const t  = new Date();
 const time = `${t.getHours()}:${t.getMinutes()}:${t.getSeconds() + 5}`;
+console.log(time);
 const routine = new DatabaseUpdateRoutine(time);
 routine.start();
 

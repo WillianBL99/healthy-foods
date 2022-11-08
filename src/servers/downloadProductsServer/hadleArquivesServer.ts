@@ -1,190 +1,139 @@
-import { unlink } from 'fs';
-import { createGunzip } from 'zlib';
-import { createReadStream } from 'fs';
-import Types, { FileProductStream, Product } from '@/interfaces';
-import { AppError, ERROR_ON_DOWNLOAD_FILE } from '@/events';
-
+import Types, { Product } from '@/interfaces';
+import { createGunzip, Gunzip } from 'zlib';
+import { ERROR_ON_DOWNLOAD_FILE } from '@/events';
 import Axios from 'axios';
-import httpStatus from 'http-status';
+import ndjson from 'ndjson';
+import { paths } from './paths';
+//import through from 'through';
 
+type ParseArrayObject = {
+  count: number;
+  quantity: number;
+};
 export class HadleArquivesServer {
-  private static listProducts: Product[] = [];
-  static async download(fileUrl: string, outputLocationPath: string) {
-    console.log(`Downloading file from ${outputLocationPath}`);
+  private listProducts: Product[] = [];
+
+  static async importFilesName() {
+    const filesNameArquive = await Axios({
+      method: 'GET',
+      url: paths.FILES_URL,
+    });
+    console.log(paths.FILES_URL);
+    const filesNameArray: string[] = filesNameArquive.data.split('\n');
+    return filesNameArray.filter((fileName) => fileName.endsWith('.gz'));
+  }
+
+  async download(fileUrl: string, quantity: number = 100): Promise<Product[]> {
     const unzip = createGunzip();
 
-    const arquive = {
-      buffer: '',
-      countRows: 0,
+    const opt = {
+      count: 0,
+      quantity,
+      bufer: '',
     };
 
-    return Axios({ method: 'GET', url: fileUrl, responseType: 'stream' })
-      .then(async (response) => {
-        response.data.pipe(unzip).on('data', (chunk: any) => {
-          arquive.buffer += chunk.toString();
+    return new Promise<Product[]>((resolve) => {
+      Axios({ method: 'GET', url: fileUrl, responseType: 'stream' })
+        .then(async (response) => {
+          response.data
+            .pipe(unzip)
+            .pipe(ndjson.parse())
+            .on('data', (data: Object) => {
+              this.parseObjectToList(data, opt, unzip);
+            });
 
-          let pos;
-          while ((pos = arquive.buffer.indexOf('\n')) >= 0) {
-            // got a full line
-            if (pos == 0) {
-              arquive.buffer = arquive.buffer.slice(1);
-              continue;
-            }
+          unzip.on('error', (err) => {
+            console.log(err);
+            unzip.destroy();
+            throw ERROR_ON_DOWNLOAD_FILE(err);
+          });
 
-            HadleArquivesServer.processLine(arquive.buffer.slice(0, pos));
+          unzip.on('end', () => {
+            resolve(this.listProducts);
+          });
 
-            arquive.countRows++;
-            arquive.buffer = arquive.buffer.slice(pos + 1);
-          }
+          unzip.on('close', () => {
+            unzip.destroy();
+            console.log('close');
+            resolve(this.listProducts);
+            return;
+          });
+        })
+        .catch((error) => {
+          throw ERROR_ON_DOWNLOAD_FILE(error);
         });
-
-        if (arquive.countRows >= 2) {
-          unzip.close();
-          return true;
-        }
-      })
-      .catch((error) => {
-        throw ERROR_ON_DOWNLOAD_FILE(error);
-      });
-  }
-
-  static async deleteFile(uriFile: string) {
-    unlink(uriFile, () => {});
-  }
-
-  static async readJsonFileStream(
-    uriJsonFile: string,
-    porductsPerFile: number
-  ): Promise<Product[]> {
-    return new Promise<Product[]>((resolve, reject) => {
-      const arquive = {
-        stream: createReadStream(uriJsonFile, {
-          flags: 'r',
-          encoding: 'utf-8',
-        }),
-        buffer: '',
-        countRows: 0,
-      };
-
-      arquive.stream.on('data', async function (chunk) {
-        arquive.buffer += chunk.toString();
-        HadleArquivesServer.processBuffer(arquive, porductsPerFile);
-      });
-
-      const finish = () => {
-        resolve(this.listProducts);
-        this.deleteFile(uriJsonFile);
-        this.listProducts = [];
-      };
-
-      arquive.stream.on('close', finish);
-      arquive.stream.on('end', finish);
-
-      arquive.stream.on('error', (error) => {
-        reject(error);
-        this.listProducts = [];
-        throw new AppError(
-          error,
-          httpStatus.INTERNAL_SERVER_ERROR,
-          'Error on read file',
-          'Error during the reading a product file'
-        );
-      });
     });
   }
 
-  private static processBuffer(
-    arquive: FileProductStream,
-    porductsPerFile: number
-  ): Boolean {
-    var pos;
-
-    while ((pos = arquive.buffer.indexOf('\n')) >= 0) {
-      // got a full line
-      if (pos == 0) {
-        arquive.buffer = arquive.buffer.slice(1);
-        continue;
-      }
-
-      this.processLine(arquive.buffer.slice(0, pos));
-
-      arquive.countRows++;
-      arquive.buffer = arquive.buffer.slice(pos + 1);
-
-      if (arquive.countRows >= porductsPerFile) {
-        arquive.stream.pause();
-        arquive.stream.destroy();
-        return true;
-      }
-    }
-    return true;
-  }
-
-  private static processLine(line: string) {
-    if (line[line.length - 1] == '\r') line = line.substr(0, line.length - 1);
-
-    if (line.length > 0) {
-      const product = this.parseNewProduct(JSON.parse(line));
-      //this.listProducts.push(product);
-      console.log({ product });
+  private parseObjectToList(
+    obj: any,
+    opt: ParseArrayObject,
+    previusPipe: Gunzip
+  ) {
+    if (opt.count >= opt.quantity) {
+      previusPipe.close();
+    } else {
+      this.listProducts.push(this.parseNewProduct(obj));
+      opt.count++;
     }
   }
 
-  private static parseNewProduct(line: any) {
+  private parseNewProduct(line: any) {
     const milliseconds = 1000;
     const seconds = new Date().getTime() / milliseconds;
-    const parseObj = HadleArquivesServer.filterProperties(line);
+    const parseObj = this.filterProperties(line);
     parseObj.imported_t = seconds.toFixed(0);
     parseObj.status = 'publisher';
     return parseObj as Product;
   }
 
-  private static filterProperties(obj: any): Types<any> {
+  private filterProperties(obj: any): Types<any> {
     const {
-      code,
       url,
-      creator,
-      created_t,
-      last_modified_t,
-      product_name,
-      quantity,
-      brands,
-      categories,
-      labels,
+      code,
       cities,
-      purchase_places,
-      stores,
-      ingredients_text,
+      brands,
+      labels,
       traces,
+      stores,
+      creator,
+      quantity,
+      image_url,
+      created_t,
+      categories,
+      product_name,
       serving_size,
+      main_category,
+      purchase_places,
+      last_modified_t,
+      ingredients_text,
       serving_quantity,
       nutriscore_score,
       nutriscore_grade,
-      main_category,
-      image_url,
     } = obj;
+
     return {
       code,
-      url,
-      creator,
-      created_t,
-      last_modified_t,
-      product_name,
-      quantity,
       brands,
-      categories,
-      labels,
       cities,
-      purchase_places,
+      labels,
       stores,
-      ingredients_text,
       traces,
+      creator,
+      image_url,
+      created_t,
+      categories,
+      product_name,
       serving_size,
-      serving_quantity,
+      main_category,
+      last_modified_t,
+      purchase_places,
+      ingredients_text,
       nutriscore_score,
       nutriscore_grade,
-      main_category,
-      image_url,
+      url: url.replace(/\"/g, ''),
+      quantity: parseInt(quantity),
+      serving_quantity: parseInt(serving_quantity),
     };
   }
 }
