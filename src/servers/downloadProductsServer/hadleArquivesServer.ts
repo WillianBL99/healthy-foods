@@ -132,8 +132,8 @@ export class HadleArquivesServer {
       nutriscore_score,
       nutriscore_grade,
       url: url.replace(/\"/g, ''),
-      quantity: parseInt(quantity),
-      serving_quantity: parseInt(serving_quantity),
+      quantity: parseInt(quantity) || null,
+      serving_quantity: parseInt(serving_quantity) || null,
     };
   }
 }
